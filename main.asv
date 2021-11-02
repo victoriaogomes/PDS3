@@ -1,5 +1,4 @@
 clear all;
-close all;
 load handel;
 %% Parâmetros fixos
 M = 10;
@@ -10,15 +9,15 @@ w1 = zeros(M,1);
 %% Aplicação do LMS
 % audio + white noise
 start = 1;
-maxSampleQntd = 2000;
+maxSampleQntd = 3000;
 %% sla
 fs = 8000;
 recObj = audiorecorder(fs, 8, 1);
 disp('Start speaking.')
 recordblocking(recObj, 5);
 disp('End of Recording.');
-audio = getaudiodata(recObj);
-startSample = 1;
+s = getaudiodata(recObj);
+
 
 %% Cálculo de quantas iterações são necessárias para filtrar todo o sinal
 if rem(length(audio), maxSampleQntd) == 0
@@ -38,15 +37,10 @@ for i = 1 : max_i
     if startSample > length(audio)
         error('Foi solicitada a leitura de um intervalo do sinal começando por uma amostra de número' ...
              +' maior do que a quantidade de amostras presente no sinal.');
-    elseif i*maxSampleQntd > length(audio)
+    elseif endSample > length(audio)
         s = audio(startSample: length(audio));
     else
-        s = audio(startSample: i*maxSampleQntd);
-    end
-    if exist('s_total','var')
-        s_total = [s_total s.'];
-    else
-        s_total = s.';
+        s = audio(startSample: endSample);
     end
     %% Definição do sinal de entrada: sinal de informação (s) + ruído relacionado a referência
     lp = dsp.FIRFilter('Numerator', fir1(M-1,0.5));% Low pass FIR filter
@@ -74,20 +68,7 @@ for i = 1 : max_i
     end
     %% Atualiza amostra de onde começaremos a carregar o próximo pedaço do
     % sinal
-    startSample = i*maxSampleQntd + 1;
-    %plot
-    figure;
-    H  = abs(freqz(w1,1,M*2));
-    H1 = abs(freqz(lp.Numerator,1,M*2));
-
-    wf = linspace(0,1,M*2);
-    plot(wf,H,wf,H1);
-    xlabel('Normalized Frequency  (\times\pi rad/sample)');
-    ylabel('Magnitude');
-    legend('Adaptive Filter Response','Required Filter Response');
-    grid;
-    axis([0 1 0 2]);
-    disp('oi');
+    start = i*maxSampleQntd + 1;
 end 
 % mu2max = 2/((M+1)*Rx(1)); % 0.00001575342821396935
 
@@ -109,3 +90,16 @@ subplot(2,2,3)
 plot([1:length(output_e1)]/fs,output_e1);
 xlabel('time');
 title('LMS e(n)');
+
+figure;
+H  = abs(freqz(w1,1,M*2));
+H1 = abs(freqz(lp.Numerator,1,M*2));
+
+wf = linspace(0,1,M*2);
+
+plot(wf,H,wf,H1);
+xlabel('Normalized Frequency  (\times\pi rad/sample)');
+ylabel('Magnitude');
+legend('Adaptive Filter Response','Required Filter Response');
+grid;
+axis([0 1 0 2]);
