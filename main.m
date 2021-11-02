@@ -1,4 +1,5 @@
 clear all;
+load handel;
 %% Parâmetros fixos
 M = 10;
 
@@ -45,14 +46,20 @@ for i = 1 : max_i
     end
     %% Cálculo do valor de mu
     if i == 1
-        acf = xcorr(d).';
-        arrayMiddle = ((length(acf)-1)/2)+1;
-        Rxx = acf(arrayMiddle:end); % R_xx(0) is the center element
-        Rx = toeplitz(Rxx,[Rxx(1) conj(Rxx(2:end))]);
-        autovalores = eig(Rx);
-        maxVal = max(autovalores);
-        minVal = min(autovalores);
-        mu = 2/(maxVal+1);
+        hada = noise.*noise;
+        denom = mean(hada)*M;
+        mumax = 2/denom;
+        
+        mu = mumax/10;
+%         
+%         acf = xcorr(d).';
+%         arrayMiddle = ((length(acf)-1)/2)+1;
+%         Rxx = acf(arrayMiddle:end); % R_xx(0) is the center element
+%         Rx = toeplitz(Rxx,[Rxx(1) conj(Rxx(2:end))]);
+%         autovalores = eig(Rx);
+%         maxVal = max(autovalores);
+%         minVal = min(autovalores);
+%         mu = 2/(maxVal+1);
     end 
     tic
     [e1, y1, w1, xx] = myLMS(d, noise(1:length(s)), mu, M, w1);
