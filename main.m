@@ -50,7 +50,8 @@ for i = 1 : max_i
     end
     %% Definição do sinal de entrada: sinal de informação (s) + ruído relacionado a referência
     lp = dsp.FIRFilter('Numerator', fir1(M-1,0.5));% Low pass FIR filter
-    d = lp(noise(1:length(s))) + s;
+    n = lp(noise(1:length(s)));
+    d = n + s;
     if exist('d_total','var')
         d_total = [d_total d.'];
     else
@@ -87,7 +88,10 @@ for i = 1 : max_i
     legend('Adaptive Filter Response','Required Filter Response');
     grid;
     axis([0 1 0 2]);
-    disp('oi');
+    disp('Nosso SNR');
+    disp(ro(d, n));
+    disp('SNR do MATLAB');
+    disp(snr(d, n));
 end 
 % mu2max = 2/((M+1)*Rx(1)); % 0.00001575342821396935
 
