@@ -2,7 +2,7 @@
 close all;
 load handel;
 %% Parâmetros fixos
-M = 256;
+M = 3;
 
 %% Inicializando parâmetros do LMS
 w1 = zeros(M,1); 
@@ -37,7 +37,14 @@ noise = zeros(length(audio), 1);
 for i = 1:len
     noise(i) = audio(i+n0);
 end
-% mu = 0.001;
+%% Cálculo do p
+I = eye(M);
+a = 0.01;
+p = a * I;
+
+%% Valor de lambda
+lambda = 0.99;
+
 %% Execução do LMS
 max_i = iter;
 u = zeros(M, 1); 
@@ -73,17 +80,18 @@ for i = 1 : max_i
     mu = 0.001;
     tic
 %     [e1, y1, w1, xx] = myLMS(s, noise_part, mu, M, w1);
-    [y1, e1, w1, u] = lms_da_vic(dn, noise_part, w1, mu, u);
+    %[y1, e1, w1, u] = lms_da_vic(dn, noise_part, w1, mu, u);
+    [e1, y1, w1, u, p] = myRLS(dn, noise_part, lambda, M, w1, p, u);
     toc
     if exist('output_e1','var')
-        output_e1 = [output_e1 e1];
+        output_e1 = [output_e1 e1.'];
     else
-        output_e1 = e1;
+        output_e1 = e1.';
     end
     if exist('snr_saida', 'var')
-        snr_saida = [snr_saida mySNR(e1, noise_part)];
+        snr_saida = [snr_saida mySNR(s, noise)];
     else
-        snr_saida = mySNR(e1, noise_part);
+        snr_saida = mySNR(s, noise);
     end
     %% Atualiza amostra de onde começaremos a carregar o próximo pedaço do
     % sinal

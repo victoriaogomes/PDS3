@@ -2,7 +2,7 @@
 close all;
 load handel;
 %% Parâmetros fixos
-M = 256;
+M = 2;
 
 %% Inicializando parâmetros do LMS
 w1 = zeros(M,1); 
@@ -13,11 +13,11 @@ start = 1;
 maxSampleQntd = 2000;
 %% Gravação do áudio
 fs = 8000;
-% recObj = audiorecorder(fs, 8, 1);
-% disp('Start speaking.')
-% recordblocking(recObj, 5);
-% disp('End of Recording.');
-% audio = getaudiodata(recObj);
+recObj = audiorecorder(fs, 8, 1);
+disp('Start speaking.')
+recordblocking(recObj, 5);
+disp('End of Recording.');
+audio = getaudiodata(recObj);
 startSample = 1;
 
 %% Cálculo de quantas iterações são necessárias para filtrar todo o sinal
@@ -37,7 +37,14 @@ noise = zeros(length(audio), 1);
 for i = 1:len
     noise(i) = audio(i+n0);
 end
-% mu = 0.001;
+%% Cálculo do p
+I = eye(M);
+a = 0.01;
+p = a * I;
+
+%% Valor de lambda
+lambda = 0.99;
+
 %% Execução do LMS
 max_i = iter;
 u = zeros(M, 1); 
@@ -70,20 +77,26 @@ for i = 1 : max_i
 %         minVal = min(autovalores);
 %         mu = 2/(maxVal+minVal);
     end
+    if exist('snr_entrada', 'var')
+        snr_entrada = [snr_entrada mySNR(dn, noise_part)];
+    else
+        snr_entrada = mySNR(dn, noise_part);
+    end
     mu = 0.001;
     tic
 %     [e1, y1, w1, xx] = myLMS(s, noise_part, mu, M, w1);
-    [y1, e1, w1, u] = lms_da_vic(dn, noise_part, w1, mu, u);
+    %[y1, e1, w1, u] = lms_da_vic(dn, noise_part, w1, mu, u);
+    [e1, y1, w1, u, p] = myRLS(dn, noise_part, lambda, M, w1, p, u);
     toc
     if exist('output_e1','var')
-        output_e1 = [output_e1 e1];
+        output_e1 = [output_e1 e1.'];
     else
-        output_e1 = e1;
+        output_e1 = e1.';
     end
     if exist('snr_saida', 'var')
-        snr_saida = [snr_saida mySNR(e1, noise_part)];
+        snr_saida = [snr_saida mySNR(e1, y1)];
     else
-        snr_saida = mySNR(e1, noise_part);
+        snr_saida = mySNR(e1, y1);
     end
     %% Atualiza amostra de onde começaremos a carregar o próximo pedaço do
     % sinal
