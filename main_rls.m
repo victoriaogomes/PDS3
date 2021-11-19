@@ -13,11 +13,11 @@ start = 1;
 maxSampleQntd = 2000;
 %% Gravação do áudio
 fs = 8000;
-recObj = audiorecorder(fs, 8, 1);
-disp('Start speaking.')
-recordblocking(recObj, 5);
-disp('End of Recording.');
-audio = getaudiodata(recObj);
+% recObj = audiorecorder(fs, 8, 1);
+% disp('Start speaking.')
+% recordblocking(recObj, 5);
+% disp('End of Recording.');
+% audio = getaudiodata(recObj);
 startSample = 1;
 
 %% Cálculo de quantas iterações são necessárias para filtrar todo o sinal
@@ -94,6 +94,7 @@ for i = 1 : max_i
         output_e1 = e1.';
     end
     if exist('snr_saida', 'var')
+        
         snr_saida = [snr_saida mySNR(e1, y1)];
     else
         snr_saida = mySNR(e1, y1);
@@ -142,3 +143,21 @@ subplot(2,2,3)
 plot([1:length(output_e1)]/fs,output_e1);
 xlabel('time');
 title('LMS e(n)');
+
+%%% FFT'S
+figure(3);
+fft_entrada = fft(dn);
+plot(abs(fft_entrada));
+
+
+figure(4);
+fft_ruido = fft(y1);
+plot(abs(fft_ruido));
+
+
+figure(5);
+fft_saida = fft(e1);
+plot(abs(fft_saida));
+
+figure(6);
+stem(snr_saida);

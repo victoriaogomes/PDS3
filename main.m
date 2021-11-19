@@ -5,8 +5,8 @@ load handel;
 M = 256;
 
 %% Inicializando parâmetros do LMS
-w1 = zeros(M,1); 
-
+w1 = ones(M,1); 
+w1 = w1.*0.3;
 %% Aplicação do LMS
 % audio + white noise
 start = 1;
@@ -120,7 +120,7 @@ figure()
 subplot(2,2,1)
 plot([1:length(audio)]/fs,audio);
 xlabel('time');
-title('sinal limpo');
+title('sinal de entrada');
 % subplot(2,2,2)
 % plot([1:length(d_total)]/fs,d_total);
 % xlabel('time');
@@ -128,4 +128,23 @@ title('sinal limpo');
 subplot(2,2,3)
 plot([1:length(output_e1)]/fs,output_e1);
 xlabel('time');
-title('LMS e(n)');
+title('LMS e(n) - sinal filtrado');
+
+%%% FFT'S
+figure(3);
+dn_normalized = dn/max(dn);
+fft_entrada = fft(dn_normalized)/2000;
+plot(abs(fft_entrada));
+
+
+figure(4);
+fft_ruido = fft(y1)/2000;
+plot(abs(fft_ruido));
+
+
+figure(5);
+fft_saida = fft(e1)/2000;
+plot(abs(fft_saida));
+
+figure(6);
+stem(snr_saida);

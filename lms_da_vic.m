@@ -1,7 +1,7 @@
 %% un é a entrada de referência, algo parecido com o ruído real do sinal
 %% w é o vetor que vai ser usado para armazenar os coeficientes do filtro
 %% mu é o passo a ser utilizado para atualização dos coeficientes
-function [yn, en, w, u] = lms_da_vic(dn, un, w, mu, u)
+function [normalized_yn, en, w, u] = lms_da_vic(dn, un, w, mu, u)
     %% Quantidade de coeficientes do filtro que será utilizado
     M = length(w);   
 
