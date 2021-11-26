@@ -6,15 +6,23 @@ auxiliarFunc = AuxiliarFunctions();
 
 %% Carregamento do áudio que será filtrado
 disp('--> Olá!')
-disp("Informe o nome do arquivo que gostaria de filtrar usando como base " ...
-    + newline + "o RLS e LMS, ou digite -1 para usar o áudio default da aplicação");
-audioToLoad = input('Nome do arquivo: ');
-
-if audioToLoad == -1
-    load audio_app_frequency.mat;
-else
-    [audio, fs] = audioread(audioToLoad);
-    auxiliarFunc.fs = fs;
+disp('Gostaria de carregar um arquivo de áudio ou gravar um novo áudio?');
+disp('1 - Gravar áudio');
+disp('2 - Carregar áudio');
+option = input('Opção escolhida: ');
+switch option
+    case 1
+        audio = auxiliarFunc.recordAudio();
+    case 2
+        disp("Informe o nome do arquivo que gostaria de filtrar usando como base " ...
+            + newline + "o RLS e LMS, ou digite -1 para usar o áudio default da aplicação");
+        audioToLoad = input('Nome do arquivo: ');
+        if audioToLoad == -1
+            load audio_app_frequency.mat;
+        else
+            [audio, fs] = audioread(audioToLoad);
+            auxiliarFunc.fs = fs;
+        end
 end
 
 %% Definição do sinal de referência

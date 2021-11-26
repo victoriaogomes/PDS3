@@ -9,7 +9,7 @@ classdef RLSModel < handle
         signalOutputSNR;                    % SNR do sinal de saída
         estimatedNoise;                     % Ruído estimado
         filteredSignal;                     % Sinal filtrado
-        p;
+        p;                                  % Matriz de autocorrelação
         elapsedTime;                        % Tempo que levou para filtrar o último sinal informado
     end
     
