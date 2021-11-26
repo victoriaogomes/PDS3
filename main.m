@@ -1,6 +1,9 @@
 close all;
 clear all;
 
+%% Declaração de objeto com funções auxiliares para o funcionamento do programa
+auxiliarFunc = AuxiliarFunctions();
+
 %% Carregamento do áudio que será filtrado
 disp('--> Olá!')
 disp("Informe o nome do arquivo que gostaria de filtrar usando como base " ...
@@ -8,11 +11,10 @@ disp("Informe o nome do arquivo que gostaria de filtrar usando como base " ...
 audioToLoad = input('Nome do arquivo: ');
 
 if audioToLoad == -1
-    aux = load('audio_app_frequency.mat');
-    fns = fieldnames(aux);
-    audio = aux.(fns{1});
+    load audio_app_frequency.mat;
 else
-    audio = audioread(audioToLoad);
+    [audio, fs] = audioread(audioToLoad);
+    auxiliarFunc.fs = fs;
 end
 
 %% Definição do sinal de referência
@@ -22,9 +24,6 @@ noise = zeros(length(audio), 1);
 for i = 1:len
     noise(i) = audio(i+n0);
 end
-
-%% Declaração de objeto com funções auxiliares para o funcionamento do programa
-auxiliarFunc = AuxiliarFunctions();
 
 %% Aplicação da filtragem com o LMS
 lmsModel = LMSModel();
@@ -62,15 +61,19 @@ while option ~= -1
     disp("1 - Gráfico do sinal de entrada");
     disp("2 - Gráfico do sinal filtrado pelo LMS");
     disp("3 - Gráfico do ruído estimado pelo LMS");
-    disp("4 - Gráfico do sinal filtrado pelo RLS");
-    disp("5 - Gráfico do ruído estimado pelo RLS");
+    disp("4 - Gráfico do SNR de cada iteração do LMS");
+    disp("5 - Gráfico do sinal filtrado pelo RLS");
+    disp("6 - Gráfico do ruído estimado pelo RLS");
+    disp("7 - Gráfico do SNR de cada iteração do RLS");
     disp("Para sair, digite -1");
     option = input('Opção selecionada: ');
-    if option ~= -1
-        disp("--> Em que domínio gostaria de visualizar essas informações?");
-        disp("1 - Domínio do tempo");
-        disp("2 - Domínio da frequência");
-        graphType = input('Opção selecionada: ');
+    if option ~=-1
+        if option ~= 4 && option ~= 7
+            disp("--> Em que domínio gostaria de visualizar essas informações?");
+            disp("1 - Domínio do tempo");
+            disp("2 - Domínio da frequência");
+            graphType = input('Opção selecionada: ');
+        end
         switch option
             case 1
                 signalToPlot = audio;
@@ -82,20 +85,30 @@ while option ~= -1
                 signalToPlot = lmsModel.estimatedNoise;
                 title = "Ruído estimado pelo LMS";
             case 4
+                signalToPlot = lmsModel.signalOutputSNR;
+                title = "SNR a cada amostra processada pelo LMS";
+            case 5
                 signalToPlot = rlsModel.filteredSignal;
                 title = "Sinal filtrado pelo RLS";
-            case 5
+            case 6
                 signalToPlot = rlsModel.estimatedNoise;  
                 title = "Ruído estimado pelo RLS"; 
+            case 7
+                signalToPlot = rlsModel.signalOutputSNR;
+                title = "SNR a cada amostra processada pelo RLS";
         end
 
-        switch graphType
-            case 1
-                title = title + " no domínio do tempo";
-                auxiliarFunc.plotTime(signalToPlot, figNumber, title);
-            case 2
-                title = title + " no domínio da frequência";
-                auxiliarFunc.plotFFT(signalToPlot, figNumber, title);
+        if or(option == 4, option == 7)
+            auxiliarFunc.plotSNR(signalToPlot, figNumber, title);
+        else
+            switch graphType
+                case 1
+                    title = title + " no domínio do tempo";
+                    auxiliarFunc.plotTime(signalToPlot, figNumber, title);
+                case 2
+                    title = title + " no domínio da frequência";
+                    auxiliarFunc.plotFFT(signalToPlot, figNumber, title);
+            end
         end
         figNumber = figNumber + 1;
     end

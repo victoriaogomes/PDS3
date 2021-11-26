@@ -3,8 +3,8 @@ classdef AuxiliarFunctions < handle
     % filtragem usando LMS quanto para RLS
     properties
         startSample = 1;        % Amostra onde a filtragem vai iniciar
-        endSample = 1000;       % Amostra onde a filtragem vão finalizar
-        maxSampleQntd = 1000;   % Quantidade de amostras filtradas por execução
+        endSample = 2000;       % Amostra onde a filtragem vão finalizar
+        maxSampleQntd = 2000;   % Quantidade de amostras filtradas por execução
         fs = 8000;              % Frequência de amostragem para gravação de áudio
     end
     
@@ -60,10 +60,19 @@ classdef AuxiliarFunctions < handle
             title(titleTxt);
         end
         
+        % Função para plotar o sinal recebido por parâmetro no domínio do
+        % tempo
         function plotTime(obj, signal, figNumber, titleTxt)
             figure(figNumber);
             plot([1:length(signal)]/obj.fs,signal);
             xlabel('Tempo');
+            title(titleTxt);
+        end
+        
+        % Função para plotar o SNR recebido por parâmetro
+        function plotSNR(~, signal, figNumber, titleTxt)
+            figure(figNumber);
+            stem(signal);
             title(titleTxt);
         end
         
