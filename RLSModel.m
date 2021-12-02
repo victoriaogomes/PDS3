@@ -1,8 +1,8 @@
 classdef RLSModel < handle
     % Classe responsável pela aplicação do método RLS
     properties
-        filtOrd = 1;                        % Ordem do filtro
-        lambda = 0.999;                     % Fator de esquecimento
+        filtOrd = 25;                       % Ordem do filtro
+        lambda = 1;                     % Fator de esquecimento
         filtWeights;                        % Array de pesos do filtro
         delayedCoeffs;                      % Sinal de referêcia atrasado 
         signalInputSNR;                     % SNR do sinal de entrada
@@ -79,7 +79,7 @@ classdef RLSModel < handle
         
         % Filtra o sinal primSignal recebido por parâmetro, usando o refSignal para estimar 
         % o ruído que deve ser removido
-        function [norm_estimNoise, filtSignal] = filterSignalPart(obj, primSignal, refSignal)
+        function [estimNoise, norm_filtSignal] = filterSignalPart(obj, primSignal, refSignal)
             % Quantidade de iterações que serão realizadas
             iter = length(primSignal);
             
@@ -94,11 +94,15 @@ classdef RLSModel < handle
             for n = 1:iter
                 obj.delayedCoeffs = [refSignal(n); obj.delayedCoeffs(1:obj.filtOrd-1)];
                 k = (obj.p * obj.delayedCoeffs) ./ (obj.lambda + obj.delayedCoeffs' * obj.p * obj.delayedCoeffs);
-                estimNoise(n) = obj.delayedCoeffs'*obj.filtWeights;
+                
+                filtSignal(n) = obj.delayedCoeffs'*obj.filtWeights;
+                
                 norm_primSignal = primSignal/max(abs(primSignal));
-                norm_estimNoise = estimNoise/max(abs(primSignal));
-                filtSignal(n) = norm_primSignal(n) - norm_estimNoise(n);
-                obj.filtWeights = obj.filtWeights + k * conj(filtSignal(n));
+                norm_filtSignal = filtSignal/max(abs(primSignal));
+                estimNoise(n) = norm_primSignal(n) - norm_filtSignal(n);
+                
+                
+                obj.filtWeights = obj.filtWeights + k * conj(estimNoise(n));
                 obj.p = (obj.p - k * obj.delayedCoeffs' * obj.p) ./ obj.lambda;
             end
         end

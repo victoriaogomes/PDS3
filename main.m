@@ -1,5 +1,6 @@
 close all;
 clear all;
+clc;
 
 %% Declaração de objeto com funções auxiliares para o funcionamento do programa
 auxiliarFunc = AuxiliarFunctions();
