@@ -81,7 +81,7 @@ classdef AuxiliarFunctions < handle
         function audio = recordAudio(obj)
             recObj = audiorecorder(obj.fs, 8, 1);
             disp('Início da gravação: Comece a falar.')
-            recordblocking(recObj, 5);
+            recordblocking(recObj, 1);
             disp('Fim da gravação.');
             audio = getaudiodata(recObj);
         end

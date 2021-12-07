@@ -2,7 +2,7 @@ classdef RLSModel < handle
     % Classe responsável pela aplicação do método RLS
     properties
         filtOrd = 25;                       % Ordem do filtro
-        lambda = 1;                     % Fator de esquecimento
+        lambda = 1;                         % Fator de esquecimento
         filtWeights;                        % Array de pesos do filtro
         delayedCoeffs;                      % Sinal de referêcia atrasado 
         signalInputSNR;                     % SNR do sinal de entrada
