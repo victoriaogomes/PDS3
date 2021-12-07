@@ -74,12 +74,16 @@ classdef RLSModel < handle
             end
             % Comando finalizar a contabilização o tempo de execução do RLS
             obj.elapsedTime = toc;
+            obj.filteredSignal = obj.filteredSignal/max(abs(max(obj.filteredSignal)), ...
+                abs(min(obj.filteredSignal)));
+            obj.estimatedNoise = obj.estimatedNoise/max(abs(max(obj.filteredSignal)), ...
+                abs(min(obj.filteredSignal)));
         end
         
         
         % Filtra o sinal primSignal recebido por parâmetro, usando o refSignal para estimar 
         % o ruído que deve ser removido
-        function [estimNoise, norm_filtSignal] = filterSignalPart(obj, primSignal, refSignal)
+        function [estimNoise, filtSignal] = filterSignalPart(obj, primSignal, refSignal)
             % Quantidade de iterações que serão realizadas
             iter = length(primSignal);
             
@@ -95,14 +99,14 @@ classdef RLSModel < handle
                 obj.delayedCoeffs = [refSignal(n); obj.delayedCoeffs(1:obj.filtOrd-1)];
                 k = (obj.p * obj.delayedCoeffs) ./ (obj.lambda + obj.delayedCoeffs' * obj.p * obj.delayedCoeffs);
                 
-                filtSignal(n) = obj.delayedCoeffs'*obj.filtWeights;
+                estimNoise(n) = obj.delayedCoeffs'*obj.filtWeights;
                 
-                norm_primSignal = primSignal/max(abs(primSignal));
-                norm_filtSignal = filtSignal/max(abs(primSignal));
-                estimNoise(n) = norm_primSignal(n) - norm_filtSignal(n);
+                %norm_primSignal = primSignal/max(abs(primSignal));
+                %norm_filtSignal = filtSignal/max(abs(primSignal));
+                filtSignal(n) = primSignal(n) - estimNoise(n);
                 
                 
-                obj.filtWeights = obj.filtWeights + k * conj(estimNoise(n));
+                obj.filtWeights = obj.filtWeights + k * conj(filtSignal(n));
                 obj.p = (obj.p - k * obj.delayedCoeffs' * obj.p) ./ obj.lambda;
             end
         end

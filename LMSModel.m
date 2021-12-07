@@ -3,7 +3,7 @@ classdef LMSModel < handle
     properties
         filtOrd = 25;                       % Ordem do filtro
         filtWeights;                        % Array de pesos do filtro
-        stepSize = 0.001;                   % Tamanho do passo utilizado no LMS
+        stepSize = 0.01;                   % Tamanho do passo utilizado no LMS
         delayedCoeffs;                      % Sinal de referêcia atrasado 
         signalInputSNR;                     % SNR do sinal de entrada
         signalOutputSNR;                    % SNR do sinal de saída
@@ -70,12 +70,16 @@ classdef LMSModel < handle
             end
             % Comando finalizar a contabilização o tempo de execução do LMS
             obj.elapsedTime = toc;
+            obj.filteredSignal = obj.filteredSignal/max(abs(max(obj.filteredSignal)), ...
+                abs(min(obj.filteredSignal)));
+            obj.estimatedNoise = obj.estimatedNoise/max(abs(max(obj.filteredSignal)), ...
+                abs(min(obj.filteredSignal)));
         end
         
         
         % Filtra o sinal primSignal recebido por parâmetro, usando o refSignal para estimar 
         % o ruído que deve ser removido
-        function [estimNoise, normFiltSignal] = filterSignalPart(obj, primSignal, refSignal)
+        function [estimNoise, filtSignal] = filterSignalPart(obj, primSignal, refSignal)
             % Quantidade de iterações que serão realizadas
             iter = length(refSignal);
             
@@ -92,16 +96,16 @@ classdef LMSModel < handle
                 obj.delayedCoeffs = [refSignal(n); obj.delayedCoeffs(1:end-1)];
                 
                 % Passo 1: Filtragem
-                filtSignal(n) = obj.filtWeights' * obj.delayedCoeffs;
+                estimNoise(n) = obj.filtWeights' * obj.delayedCoeffs;
                 
                 % Passo 2: Estimação do erro
-                normPrimSignal = primSignal/max(abs(primSignal));
-                normFiltSignal = filtSignal/max(abs(primSignal));
-                estimNoise(n) = normPrimSignal(n) - normFiltSignal(n);
+%                 normPrimSignal = primSignal/max(abs(primSignal));
+%                 normFiltSignal = filtSignal/max(abs(primSignal));
+                filtSignal(n) = primSignal(n) - estimNoise(n);
                 
                 % Passo 3: Adaptação do array de pesos do filtro
                 obj.filtWeights = obj.filtWeights + ...
-                    (obj.stepSize*estimNoise(n))*obj.delayedCoeffs;
+                    (obj.stepSize*filtSignal(n))*obj.delayedCoeffs;
             end
         end
     end

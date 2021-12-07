@@ -27,7 +27,7 @@ switch option
 end
 
 %% Definição do sinal de referência
-n0 = 25;
+n0 = 1000;
 len = length(audio) - n0;
 noise = zeros(length(audio), 1);
 for i = 1:len
